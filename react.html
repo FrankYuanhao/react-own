@@ -1,0 +1,99 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+  </head>
+  <body>
+    <div id="root"></div>
+
+    <script>
+      const container = document.getElementById("root");
+
+      // version 1
+      /* const element = {
+        type: "h1",
+        props: {
+          title: "Foo",
+          children: "Hello",
+        },
+      };
+
+      const node = document.createElement(element.type);
+      node["title"] = element.props.title;
+
+      const text =  document.createTextNode("");
+      text['nodeValue'] = element.props.children;
+
+      node.appendChild(text);
+      container.appendChild(node); */
+
+      // version 2
+      const Didact = {
+        createElement,
+        render,
+      };
+
+      const ELEMENT_TYPE = {
+        TEXT: "TEXT_ELEMENT",
+      };
+
+      function _getChildren(children) {
+        return children.map((item) =>
+          typeof item === "object" ? item : createTextElement(item)
+        );
+      }
+
+      function createElement(type, props, ...children) {
+        return {
+          type,
+          props: {
+            ...props,
+            children: _getChildren(children),
+          },
+        };
+      }
+
+      function createTextElement(text) {
+        return {
+          type: ELEMENT_TYPE.TEXT,
+          props: {
+            nodeValue: text,
+            children: [],
+          },
+        };
+      }
+
+      function render(element, container) {
+        const dom =
+          element.type === ELEMENT_TYPE.TEXT
+            ? document.createTextNode("")
+            : document.createElement(element.type);
+
+        const isProperty = (key) => key !== "children";
+        Object.keys(element.props)
+          .filter(isProperty)
+          .forEach((item) => {
+            dom[item] = element.props[item];
+          });
+
+        element.props.children.forEach((child) => {
+          render(child, dom);
+        });
+
+        container.appendChild(dom);
+      }
+
+      const element = Didact.createElement(
+        "div",
+        { id: "foo" },
+        Didact.createElement("span", { style: "margin-right: 10px" }, "hello"),
+        Didact.createElement("span", null, "world")
+      );
+
+      Didact.render(element, container);
+    </script>
+  </body>
+</html>
